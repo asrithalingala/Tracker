@@ -1,40 +1,32 @@
-import { createContext, useReducer, useEffect } from "react";
+// TransactionContext.js
+import React, { createContext, useReducer, useEffect } from "react";
 
-// Initial State
-const initialState = {
-  transactions: JSON.parse(localStorage.getItem("transactions")) || [],
-};
+// Load initial state from local storage if it exists
+const initialState = JSON.parse(localStorage.getItem("transactions")) || [];
 
-// Create Context
-export const TransactionContext = createContext(initialState);
+export const TransactionContext = createContext();
 
-// Reducer Function
 const transactionReducer = (state, action) => {
   switch (action.type) {
     case "ADD_TRANSACTION":
-      return { transactions: [action.payload, ...state.transactions] };
+      return [...state, action.payload];
     case "DELETE_TRANSACTION":
-      return {
-        transactions: state.transactions.filter(
-          (transaction) => transaction.id !== action.payload
-        ),
-      };
+      return state.filter((transaction) => transaction.id !== action.payload);
     default:
       return state;
   }
 };
 
-// Provider Component
 export const TransactionProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(transactionReducer, initialState);
+  const [transactions, dispatch] = useReducer(transactionReducer, initialState);
 
-  // Store Transactions in Local Storage
+  // Save transactions to local storage whenever they change
   useEffect(() => {
-    localStorage.setItem("transactions", JSON.stringify(state.transactions));
-  }, [state.transactions]);
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+  }, [transactions]);
 
   return (
-    <TransactionContext.Provider value={{ transactions: state.transactions, dispatch }}>
+    <TransactionContext.Provider value={{ transactions, dispatch }}>
       {children}
     </TransactionContext.Provider>
   );
