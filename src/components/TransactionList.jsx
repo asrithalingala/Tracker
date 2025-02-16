@@ -23,7 +23,7 @@ const TransactionList = () => {
         <select
           className="form-select"
           value={filter}
-          onChange={(e) => setFilter(e.target)}
+          onChange={(e) => setFilter(e.target.value)}
         >
           {categories.map((cat) => (
             <option key={cat} value={cat}>
