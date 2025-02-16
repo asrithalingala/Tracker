@@ -9,21 +9,17 @@ export const TransactionContext = createContext();
 const transactionReducer = (state, action) => {
   switch (action.type) {
     case "ADD_TRANSACTION":
-      return { transactions: [action.payload, ...state.transactions] };
-    case "DELETE_TRANSACTION":
-      return { transactions: state.transactions.filter(
-        (transaction) => transaction.id !== action.payload
-      )
-    };
-  case "UPDATE_TRANSACTION":
-    return { transactions: state.transactions.map(transaction =>
-        transaction.id === action.payload.id ? action.payload : transaction
-      )
-    }; 
-       default:
-      return state;
-  }
-};
+      return [action.payload, ...state];
+      case "DELETE_TRANSACTION":
+        return state.filter(transaction => transaction.id !== action.payload);
+      case "UPDATE_TRANSACTION":
+        return state.map(transaction =>
+          transaction.id === action.payload.id ? action.payload : transaction
+        );
+      default:
+        return state;
+    }
+  };
 
 export const TransactionProvider = ({ children }) => {
   const [transactions, dispatch] = useReducer(transactionReducer, initialState);

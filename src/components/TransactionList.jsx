@@ -17,15 +17,21 @@ const TransactionList = () => {
 const handleEdit = (transaction) => {
   const newText = prompt("Edit transaction description:", transaction.text);
   const newAmount = prompt("Edit transaction amount:", transaction.amount);
-  if (newText && newAmount) {
-    dispatch({
-      type: "UPDATE_TRANSACTION",
-      payload: {
-        ...transaction,
-        text: newText,
-        amount: parseFloat(newAmount)
-      }
-    });
+  // Ensure user didn't cancel the prompt
+  if (newText !== null && newAmount !== null) {
+    // Validate newAmount input
+    const parsedAmount = parseFloat(newAmount);
+    if (isNaN(parsedAmount)) {
+      alert("Please enter a valid number for the amount.");
+      return;
+    }
+    const updatedTransaction = {
+      ...transaction,
+      text: newText.trim() === "" ? transaction.text : newText,
+      amount: parsedAmount,
+    };
+    console.log("Dispatching update:", updatedTransaction);
+    dispatch({ type: "UPDATE_TRANSACTION", payload: updatedTransaction });
   }
 };
 
@@ -55,8 +61,8 @@ const handleEdit = (transaction) => {
             <span>{transaction.text} ({transaction.category}) - ${transaction.amount}</span>
             <div>
             <button
-              className="btn btn-danger btn-sm"
-              onClick={() => dispatch({ type: "DELETE_TRANSACTION", payload: transaction.id })}
+              className="btn btn-warning btn-sm me-2"
+              onClick={() => handleEdit(transaction)}
             >
                Edit
               </button>
