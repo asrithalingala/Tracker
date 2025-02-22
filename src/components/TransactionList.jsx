@@ -1,43 +1,53 @@
 import { useState, useContext } from "react";
 import { TransactionContext } from "../context/TransactionContext";
+import "../styles/TransactionList.css";
 
 const TransactionList = () => {
   const { transactions, dispatch } = useContext(TransactionContext);
   const [filter, setFilter] = useState("All");
+  const [searchTerm, setSearchTerm] = useState(""); // New state for search input
 
-  // Filter transactions based on the selected category
-  const filteredTransactions =
-    filter === "All"
-      ? transactions
-      : transactions.filter((t) => t.category === filter);
+  // Filter transactions based on category
+  const filteredTransactions = transactions.filter((t) => 
+    (filter === "All" || t.category === filter) &&
+    t.text.toLowerCase().includes(searchTerm.toLowerCase()) // Filter by search term
+  );
 
   // Build a unique list of categories from transactions
   const categories = ["All", ...new Set(transactions.map((t) => t.category))];
-// Handle inline editing of a transaction
-const handleEdit = (transaction) => {
-  const newText = prompt("Edit transaction description:", transaction.text);
-  const newAmount = prompt("Edit transaction amount:", transaction.amount);
-  // Ensure user didn't cancel the prompt
-  if (newText !== null && newAmount !== null) {
-    // Validate newAmount input
-    const parsedAmount = parseFloat(newAmount);
-    if (isNaN(parsedAmount)) {
-      alert("Please enter a valid number for the amount.");
-      return;
+
+  const handleEdit = (transaction) => {
+    const newText = prompt("Edit transaction description:", transaction.text);
+    const newAmount = prompt("Edit transaction amount:", transaction.amount);
+    if (newText !== null && newAmount !== null) {
+      const parsedAmount = parseFloat(newAmount);
+      if (isNaN(parsedAmount)) {
+        alert("Please enter a valid number for the amount.");
+        return;
+      }
+      const updatedTransaction = {
+        ...transaction,
+        text: newText.trim() === "" ? transaction.text : newText,
+        amount: parsedAmount,
+      };
+      dispatch({ type: "UPDATE_TRANSACTION", payload: updatedTransaction });
     }
-    const updatedTransaction = {
-      ...transaction,
-      text: newText.trim() === "" ? transaction.text : newText,
-      amount: parsedAmount,
-    };
-    console.log("Dispatching update:", updatedTransaction);
-    dispatch({ type: "UPDATE_TRANSACTION", payload: updatedTransaction });
-  }
-};
+  };
 
   return (
-    <div className="container mt-4" >
-      <h3 className="fw-bold">Transaction History</h3>
+    <div className="container mt-4">
+      <h3 className="fw-bold mb-3">Transaction History</h3>
+
+      {/* Search Bar */}
+      <input
+        type="text"
+        className="form-control mb-3"
+        placeholder="Search transactions..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+
+      {/* Filter by Category */}
       <div className="mb-3">
         <label className="form-label">Filter by Category:</label>
         <select
@@ -52,6 +62,8 @@ const handleEdit = (transaction) => {
           ))}
         </select>
       </div>
+
+      {/* Transaction List */}
       <ul className="list-group">
         {filteredTransactions.map((transaction) => (
           <li
@@ -60,23 +72,23 @@ const handleEdit = (transaction) => {
           >
             <span>{transaction.text} ({transaction.category}) - ${transaction.amount}</span>
             <div>
-            <button
-              className="btn btn-warning btn-sm me-2"
-              onClick={() => handleEdit(transaction)}
-            >
-               Edit
+              <button
+                className="btn btn-warning btn-sm me-2"
+                onClick={() => handleEdit(transaction)}
+              >
+                Edit
               </button>
               <button
                 className="btn btn-danger btn-sm"
                 onClick={() =>
                   dispatch({
                     type: "DELETE_TRANSACTION",
-                    payload: transaction.id
+                    payload: transaction.id,
                   })
                 }
               >
-              Delete
-            </button>
+                Delete
+              </button>
             </div>
           </li>
         ))}
