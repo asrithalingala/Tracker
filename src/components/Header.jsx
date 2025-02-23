@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import "../styles/Header.css";
 import { TransactionContext } from "../context/TransactionContext";
 
 const Header = () => {
